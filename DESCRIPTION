@@ -1,13 +1,14 @@
 Package: mopi
-Title: What the Package Does (One Line, Title Case)
+Title: Multivariate Outcome Prediction Intervals
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Gordon",
+           family = "Forbes",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
+           email = "gordon.forbes@kcl.ac.uk",
+           comment = c(ORCID = "https://orcid.org/0000-0001-8662-3636"))
+Description: This packages calculates predictions and prediction intervals
+    for multivariate outcomes and weighted combinations of outcomes. .
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
