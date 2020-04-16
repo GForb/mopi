@@ -33,7 +33,8 @@ process_e_b <- function(e_b, e_b_rownames) {
   sigma_e <- get_sigma_e(error_variances = parameters$error_variances,
                          error_covariances = parameters$error_covariances,
                          n_outcomes = counts$n_outcomes)
-  list(sigma_e = sigma_e, beta = beta, n_outcomes = counts$n_outcomes, n_covariates = counts$n_covariates)
+  c(list(sigma_e = sigma_e, beta = beta),
+    counts)
 }
 
 process_e_V <- function(e_V, n_outcomes, n_covariates) {
@@ -61,7 +62,7 @@ count_variables_stata <- function(beta_names) {
   outcome_names <- unique(sub("\\:.*", "", beta_names))
   n_outcomes <- length(outcome_names)
   n_covariates <- length(beta_names)/n_outcomes
-  list(n_outcomes = n_outcomes, n_covariates = n_covariates)
+  list(n_outcomes = n_outcomes, n_covariates = n_covariates, outcomes = outcome_names)
 }
 
 get_sigma_e <- function(error_variances, error_covariances, n_outcomes) {

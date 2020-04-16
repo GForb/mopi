@@ -1,7 +1,7 @@
-predict_weighted <- function(data, weights, model_parameters){
-  predictions <- apply(X, MARGIN = 1, single_weighted_prediction, weights, model)
-  process(predictions)
-}
+# predict_weighted <- function(data, weights, model_parameters){
+#   predictions <- apply(X, MARGIN = 1, single_weighted_prediction, weights, model)
+#   process(predictions)
+# }
 
 single_weighted_predction <- function(x, weights, model) {
   n_outcomes <- model$n_outcomes
@@ -21,15 +21,35 @@ single_weighted_predction <- function(x, weights, model) {
   }
   var_y <- diag(sigma_y_hat)
   se_y <- sqrt(var_y)
-  var_weighted <- t(w) %*% sigma_y_hat %*% w
-  se_weighted <- sqrt(var_weighted)
+  var_pred_y <- var_y + diag(model$sigma_e)
+  se_pred_y <- sqrt(var_pred_y)
 
+  var_weighted <- t(w) %*% sigma_y_hat %*% w
+  var_error_weighted <- t(w) %*% model$sigma_e %*% w
+  se_weighted <- sqrt(var_weighted)
+  var_pred_weighted <-var_weighted + var_error_weighted
+  se_pred_weighted <- sqrt(var_pred_weighted)
   # var_predictions = diag(sigma_y_hat + diag(sigma_e))
   # var_weighted_prediction = t(w) %*% sigma_y_hat %*% w + t(w) %*% sigma_e %*% w
   # se_weighted_prediction =
-  return(list(predictions = predictions,
-              weighted_prediction = weighted_prediction,
-              sigma_y_hat = sigma_y_hat,
-              se_y = se_y,
-              se_weighted = se_weighted))
+  ci_multiplier <- qnorm(0.975)
+  predictions <- data.frame(outcome = model$outcomes,
+                            .fitted = predictions,
+                            .se.fit = se_y,
+                            .conf.low = weighted_prediction - (ci_multiplier*se_weighted),
+                            .conf.high = weighted_prediction + (ci_multiplier*se_weighted),
+                            .se.forecast = se_pred_y,
+                            pred.low = predictions + (ci_multiplier*se_pred_y),
+                            pred.high = predictions + (ci_multiplier*se_pred_y))
+
+  weighted_prediction <- data.frame(outcome = "weighted",
+                                    .fitted = weighted_prediction, .se.fit = se_weighted,
+                                    .conf.low = weighted_prediction - (ci_multiplier*se_weighted),
+                                    .conf.high = weighted_prediction + (ci_multiplier*se_weighted),
+                                    .se.forecast = se_pred_weighted,
+                                    pred.low = weighted_prediction + (ci_multiplier*se_pred_weighted),
+                                    pred.high = weighted_prediction + (ci_multiplier*se_pred_weighted))
+
+  results <- rbind(predictions, weighted_prediction)
+  return(results)
 }
