@@ -32,14 +32,14 @@ single_weighted_predction <- function(x, weights, model) {
   # var_predictions = diag(sigma_y_hat + diag(sigma_e))
   # var_weighted_prediction = t(w) %*% sigma_y_hat %*% w + t(w) %*% sigma_e %*% w
   # se_weighted_prediction =
-  ci_multiplier <- qnorm(0.975)
+  ci_multiplier <- stats::qnorm(0.975)
   predictions <- data.frame(outcome = model$outcomes,
                             .fitted = predictions,
                             .se.fit = se_y,
                             .conf.low = weighted_prediction - (ci_multiplier*se_weighted),
                             .conf.high = weighted_prediction + (ci_multiplier*se_weighted),
                             .se.forecast = se_pred_y,
-                            pred.low = predictions + (ci_multiplier*se_pred_y),
+                            pred.low = predictions - (ci_multiplier*se_pred_y),
                             pred.high = predictions + (ci_multiplier*se_pred_y))
 
   weighted_prediction <- data.frame(outcome = "weighted",
@@ -47,7 +47,7 @@ single_weighted_predction <- function(x, weights, model) {
                                     .conf.low = weighted_prediction - (ci_multiplier*se_weighted),
                                     .conf.high = weighted_prediction + (ci_multiplier*se_weighted),
                                     .se.forecast = se_pred_weighted,
-                                    pred.low = weighted_prediction + (ci_multiplier*se_pred_weighted),
+                                    pred.low = weighted_prediction - (ci_multiplier*se_pred_weighted),
                                     pred.high = weighted_prediction + (ci_multiplier*se_pred_weighted))
 
   results <- rbind(predictions, weighted_prediction)

@@ -15,5 +15,7 @@ test_that("single_weighted_predction", {
   expect_lt(abs(results$.se.fit[1] - 0.2456221),0.00001)
   expect_lt(abs(results$.se.fit[2] - 0.2218644),0.00001)
   expect_lt(abs(results$.se.fit[3] - 0.2159222),0.00001)
+  expect_true(all(results$pred.low < results$pred.high))
+  expect_true(all(results$.conf.low < results$.conf.high))
   expect_equal(results$outcome, factor(c("stand_y1", "stand_y2", "weighted")))
 })
