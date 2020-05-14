@@ -25,17 +25,24 @@ import_estimates_stata <- function(e_b, e_b_rownames, e_V) {
   return(c(beta_sigma_e_and_counts, list(sigma_beta = sigma_beta)))
 }
 
+
+
 process_e_b <- function(e_b, e_b_rownames) {
-  parameters <- split_betas_and_errors(e_b, e_b_rownames)
-  counts <- count_variables_stata(parameters$beta_names)
-  beta_t <- matrix(parameters$beta, ncol = counts$n_outcomes)
+  parameters <- split_betas_and_errors_stata(e_b, e_b_rownames)
+  n_outcomes <- length(parameters$outcomes)
+  n_covariates <- length(parameters$covariates)
+  beta_t <- matrix(parameters$beta, ncol = n_outcomes)
   beta <- t(beta_t)
   sigma_e <- get_sigma_e(error_variances = parameters$error_variances,
                          error_covariances = parameters$error_covariances,
-                         n_outcomes = counts$n_outcomes)
-  c(list(sigma_e = sigma_e, beta = beta),
-    counts)
+                         n_outcomes = n_outcomes)
+  return(c(list(sigma_e = sigma_e,
+                beta = beta, covariates = parameters$covariates,
+                outcomes = parameters$outcomes),
+                n_outcomes = n_outcomes,
+                n_covariates = n_covariates))
 }
+
 
 process_e_V <- function(e_V, n_outcomes, n_covariates) {
   n_betas <- n_outcomes*n_covariates
@@ -50,20 +57,22 @@ process_e_V <- function(e_V, n_outcomes, n_covariates) {
   return(sigma_beta)
 }
 
-split_betas_and_errors <- function(e_b, e_b_rownames) {
+split_betas_and_errors_stata <- function(e_b, e_b_rownames) {
   error_variances <- e_b[grepl("/var*", e_b_rownames)]
   error_covariances <- e_b[grepl("/cov*", e_b_rownames)]
   beta <- e_b[!(grepl("/cov*", e_b_rownames) | grepl("/var*", e_b_rownames))]
   beta_names <- e_b_rownames[!(grepl("/cov*", e_b_rownames) | grepl("/var*", e_b_rownames))]
-  list(beta = beta, beta_names = beta_names, error_variances = error_variances, error_covariances = error_covariances)
+  outcome_names <- unique(sub("\\:.*", "", beta_names))
+  covariate_names <- unique(sub(".*\\:", "", beta_names))
+  covariate_names <- sub("_cons", "intercept", covariate_names)
+  list(covariates = covariate_names,
+       outcomes = outcome_names,
+       beta = beta,
+       error_variances = error_variances,
+       error_covariances = error_covariances)
 }
 
-count_variables_stata <- function(beta_names) {
-  outcome_names <- unique(sub("\\:.*", "", beta_names))
-  n_outcomes <- length(outcome_names)
-  n_covariates <- length(beta_names)/n_outcomes
-  list(n_outcomes = n_outcomes, n_covariates = n_covariates, outcomes = outcome_names)
-}
+
 
 get_sigma_e <- function(error_variances, error_covariances, n_outcomes) {
   sigma_e <- matrix(NA, nrow = n_outcomes, ncol = n_outcomes)

@@ -5,7 +5,7 @@
 
 single_weighted_predction <- function(x, weights, model) {
   n_outcomes <- model$n_outcomes
-  x <- matrix(c(x,1), ncol = 1)
+  x <- get_x_matrix(x = x, covariates = model$covariates)
   w <- matrix(weights, ncol = 1)
 
   #Predictions
@@ -52,4 +52,14 @@ single_weighted_predction <- function(x, weights, model) {
 
   results <- rbind(predictions, weighted_prediction)
   return(results)
+}
+
+get_x_matrix <- function(x, covariates) {
+  if(is.null(names(x))){
+    x <- c(x,1)
+  } else {
+    x <- c(x, intercept = 1)
+    x <- x[covariates]
+  }
+  return(matrix(x, ncol = 1))
 }
