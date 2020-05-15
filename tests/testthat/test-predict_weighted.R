@@ -14,9 +14,9 @@ test_that("single_weighted_predction", {
   expect_equal(results$.fitted, c(0.7099813, 0.7939842 ,0.834669 ,0.3063492 ,0.6612459), tolerance = 0.00001)
   expect_equal(results$.se.fit, c(0.1409721, 0.1456348 ,0.1496972 ,0.1843331 ,0.1277793),tolerance = 0.001)
 
-  expect_true(all(results$pred.low < results$pred.high))
+  expect_true(all(results$.pred.low < results$.pred.high))
   expect_true(all(results$.conf.low < results$.conf.high))
-  expect_equal(results$outcome, factor(c("stand_y1", "stand_y2","stand_y3", "stand_y4", "weighted")))
+  expect_equal(results$outcome, c("stand_y1", "stand_y2","stand_y3", "stand_y4", "weighted"))
 
   load("data/mplus_output.rda")
   load("data/tech3.rda")
@@ -30,7 +30,7 @@ test_that("single_weighted_predction", {
 
   expect_true(all(results_mplus$pred.low < results$pred.high))
   expect_true(all(results_mplus$.conf.low < results$.conf.high))
-  expect_equal(results_mplus$outcome, factor(c("stand_y1", "stand_y2","stand_y3", "stand_y4", "weighted")))
+  expect_equal(results_mplus$outcome, c("stand_y1", "stand_y2","stand_y3", "stand_y4", "weighted"))
 
 
 })

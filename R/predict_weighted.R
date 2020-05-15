@@ -47,8 +47,8 @@ single_weighted_predction <- function(x, weights, model) {
                                     .conf.low = weighted_prediction - (ci_multiplier*se_weighted),
                                     .conf.high = weighted_prediction + (ci_multiplier*se_weighted),
                                     .se.forecast = se_pred_weighted,
-                                    pred.low = weighted_prediction - (ci_multiplier*se_pred_weighted),
-                                    pred.high = weighted_prediction + (ci_multiplier*se_pred_weighted))
+                                    .pred.low = weighted_prediction - (ci_multiplier*se_pred_weighted),
+                                    .pred.high = weighted_prediction + (ci_multiplier*se_pred_weighted))
 
   results <- rbind(predictions, weighted_prediction)
   return(results)

@@ -33,7 +33,7 @@ process_e_b <- function(e_b, e_b_rownames) {
   n_covariates <- length(parameters$covariates)
   beta_t <- matrix(parameters$beta, ncol = n_outcomes)
   beta <- t(beta_t)
-  sigma_e <- get_sigma_e(error_variances = parameters$error_variances,
+  sigma_e <- get_sigma_e_stata(error_variances = parameters$error_variances,
                          error_covariances = parameters$error_covariances,
                          n_outcomes = n_outcomes)
   return(c(list(sigma_e = sigma_e,
@@ -74,7 +74,7 @@ split_betas_and_errors_stata <- function(e_b, e_b_rownames) {
 
 
 
-get_sigma_e <- function(error_variances, error_covariances, n_outcomes) {
+get_sigma_e_stata <- function(error_variances, error_covariances, n_outcomes) {
   sigma_e <- matrix(NA, nrow = n_outcomes, ncol = n_outcomes)
   diag(sigma_e) <-  error_variances
   sigma_e[lower.tri(sigma_e, diag = FALSE)] <- error_covariances

@@ -10,10 +10,10 @@ test_that("split_betas_and_errors_stata", {
 })
 
 
-test_that("get_sigma_e", {
+test_that("get_sigma_e_stata", {
   load("data/e_b.rda")
   betas_and_errors <- split_betas_and_errors_stata(e_b = e_b[[1]], e_b_rownames = e_b[[2]])
-  sigma_e <- get_sigma_e(error_variances = betas_and_errors$error_variances,
+  sigma_e <- get_sigma_e_stata(error_variances = betas_and_errors$error_variances,
               error_covariances = betas_and_errors$error_covariances,
               n_outcomes = length(betas_and_errors$outcomes))
   expect_equal(dim(sigma_e), c(4, 4))
