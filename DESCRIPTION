@@ -17,4 +17,5 @@ Suggests:
     testthat (>= 2.1.0),
     ggplot2
 Imports: 
-    lavaan
+    lavaan,
+    purrr

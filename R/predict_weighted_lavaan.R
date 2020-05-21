@@ -1,20 +1,13 @@
-predict_weighted_lavaan <- function(new_x, weights, processed_lavaan, predict_outcomes = TRUE) {
-  sigma_e <- processed_lavaan$sigma_e
-  sigma_beta <- processed_lavaan$sigma_beta
-  beta <- processed_lavaan$beta
+predict_weighted_lavaan <- function(new_x, weights, lavaan_model, predict_outcomes = TRUE) {
+  esstimates <- process_lavaan_estimates(lavaan_model)
+  prediction_matricies <- get_args_weighted(new_x = new_x,
+                                            weights = weights,
+                                            esstimates)
 
-  x <- c(new_x, "intercept" = 1)
-  x_long <- matrix(x[beta$rhs], ncol = 1)
-  w_long <- matrix(weights[beta$lhs], ncol = 1)
-  wx <- x_long*w_long
-  b <- matrix(beta$est, ncol = 1)
-  w <- matrix(weights[rownames(sigma_e)], ncol = 1)
-  sigma_e_weighted  <-  t(w) %*% sigma_e %*% w
-
-  predictions <- prediction_intervals(wx, b, sigma_e_weighted, sigma_beta)
+  predictions <- do.call(prediction_intervals, prediction_matricies)
   predictions$outcome <- "weighted"
   if(predict_outcomes){
-    outcome_predictions <- predict_outcomes_lavaan(new_x = x, processed_lavaan = processed_lavaan)
+    outcome_predictions <- predict_outcomes_lavaan(new_x = new_x, processed_lavaan = esstimates)
     predictions <- rbind(outcome_predictions, predictions)
   }
   return(predictions)
@@ -22,37 +15,53 @@ predict_weighted_lavaan <- function(new_x, weights, processed_lavaan, predict_ou
 
 
 
+
 predict_outcomes_lavaan <- function(new_x, processed_lavaan) {
   outcomes <- unique(processed_lavaan$beta$lhs)
-  results_list <- lapply(X = outcomes,
-                    FUN = predict_single_outcome,
-                    new_x = new_x,
-                    processed_lavaan = processed_lavaan)
-  results <- do.call(rbind.data.frame, results_list)
+
+  results <- purrr::map_dfr(outcomes,
+                            predict_single_outcome,
+                            new_x = new_x,
+                            processed_lavaan = processed_lavaan)
+
   return(results)
 }
 
-predict_single_outcome <- function(outcome_name, new_x, processed_lavaan) {
-  beta_df <- processed_lavaan$beta[processed_lavaan$beta$lhs == outcome_name,]
-  x <- matrix(new_x[beta_df$rhs], ncol = 1)
-
-  sigma_e <- processed_lavaan$sigma_e[outcome_name, outcome_name]
-  beta <- matrix(beta_df$est, ncol = 1)
-  sigma_beta <- processed_lavaan$sigma_beta[beta_df$eqname, beta_df$eqname]
-
-  results <- prediction_intervals(x, beta, sigma_e, sigma_beta)
-  results$outcome <- outcome_name
+predict_single_outcome <- function(outcome, new_x, processed_lavaan) {
+  args <- get_args_single_outcome(outcome, new_x, processed_lavaan)
+  results <- do.call(prediction_intervals, args)
+  results$outcome <- outcome
   return(results)
 }
 
-prediction_intervals <- function(x, beta, sigma_e, sigma_beta) {
-  mean_pred <-   t(x) %*% beta
-  var_mean_pred <- t(x) %*% sigma_beta %*% x
+get_single_outcome_args <- function(outcome, new_x, processed_lavaan) {
+  beta <- matrix(processed_lavaan$beta[processed_lavaan$beta$lhs == outcome], ncol = 1)
+  sigma_beta <- processed_lavaan$sigma_beta[beta$eqname, beta$eqname]
+  rescale_df <- processed_lavaan$rescale_df[processed_lavaan$rescale_df$outcome == outcome, ]
+  rescale_factor <- rescale_df$scale
+  rescale_mean <- rescale_df$mean
+  sigma_e <- processed_lavaan$sigma_e[outcome, outcome]
+  adj_sigma_e <- as.vector(sigma_e)*rescale_factor
+
+  new_x <- matrix(new_x[beta$rhs], ncol = 1)
+
+  return(list(x = new_x,
+              beta = beta,
+              sigma_beta = sigma_beta,
+              sigma_e = adj_sigma_e,
+              weights = rescale_factor,
+              mean_adjustments = rescale_mean))
+}
+
+prediction_intervals <- function(x, beta, sigma_e, sigma_beta, weights = 1, mean_adjustments = 0 ) {
+  weighted_x = weights*x
+  predicted_mean <-   (t(weighted_x) %*% beta) - mean_adjustments
+  var_mean_pred <- t(weighted_x) %*% sigma_beta %*% weighted_x
   var_pred = var_mean_pred + sigma_e
 
   ci_multiplier <- stats::qnorm(0.975)
 
-  predictions <- data.frame(.fitted = mean_pred,
+  predictions <- data.frame(.fitted = predicted_mean,
                             .se.fit = sqrt(var_mean_pred),
                             .se.pred = sqrt(var_pred))
   predictions$.conf.low <-  predictions$.fitted - (ci_multiplier*predictions$.se.fit)
