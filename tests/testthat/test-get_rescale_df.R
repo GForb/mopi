@@ -16,5 +16,24 @@ test_that("get_rescale_df", {
   scale_factors <- get_rescale_df(lavaan_cont)
   expect_equal(scale_factors, scale_factors_ref, tolerance = 0.000001)
 
+  simple_model <- readRDS("data/simple_model.rds")
+
+  coefs <- lavaan::parameterestimates(simple_model)
+  beta <- coefs$est[1]
+  model_data <- lavaan::lavTech(simple_model, what = "data")
+  preds <- model_data[[1]][,2]*beta
+  mean_preds <- mean(preds)
+  var_preds <- var(preds)
+
+  scale_factors <- get_rescale_df(simple_model)
+
+
+  scale_factors_ref <- data.frame(outcome = c("y13"),
+                                  mean = mean_preds,
+                                  variance = var_preds,
+                                  scale = 1/sqrt(1 + var_preds))
+
+  expect_equal(scale_factors, scale_factors_ref, tolerance = 0.000001)
+
 
 })

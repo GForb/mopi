@@ -65,6 +65,33 @@ test_that("get_args_single_outcome", {
   expect_equal(length(args$weights) , 1)
   expect_equal(length(args$sigma_e) , 1)
   expect_equal(dim(args$sigma_beta) , c(5, 5))
+
+
+  simple_model <- readRDS("data/simple_model.rds")
+
+  coefs <- lavaan::parameterestimates(simple_model)
+  beta <- coefs$est[1]
+  se <- coefs$se[1]
+  model_data <- lavaan::lavTech(simple_model, what = "data")
+  preds <- model_data[[1]][,2]*beta
+  mean_preds <- mean(preds)
+  var_preds <- var(preds)
+
+  scale_factors <- get_rescale_df(simple_model)
+
+  model_simp<- process_lavaan_estimates(simple_model)
+  args <- get_args_single_outcome(new_x = c(bestviq2 =22),
+                                  processed_lavaan = model_simp,
+                                  outcome = "y13")
+
+  expect_equal(args$beta[1,1] , beta)
+  expect_equal(args$x[1,1] , 22)
+  expect_equal(args$sigma_e , scale_factors$scale^2)
+  expect_equal(args$sigma_beta[1,1] , se^2)
+  expect_equal(args$weights , scale_factors$scale)
+  expect_equal(args$mean_adjustments , scale_factors$mean*scale_factors$scale)
+
+
 })
 
 test_that("weight_mean_adjustment", {

@@ -21,9 +21,9 @@ get_args_single_outcome <- function(outcome, new_x, processed_lavaan) {
   sigma_beta <- processed_lavaan$sigma_beta[beta$eqname, beta$eqname, drop = FALSE]
   rescale_df <- processed_lavaan$rescale_df[processed_lavaan$rescale_df$outcome == outcome, ]
   rescale_factor <- rescale_df$scale
-  rescale_mean <- rescale_df$mean
+  rescale_mean <- rescale_df$mean*rescale_factor
   sigma_e <- processed_lavaan$sigma_e[outcome, outcome]
-  adj_sigma_e <- as.vector(sigma_e)*rescale_factor
+  adj_sigma_e <- as.vector(sigma_e)*rescale_factor^2
 
   x <- create_x_matrix(new_x, beta)
 

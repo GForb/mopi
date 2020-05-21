@@ -34,24 +34,7 @@ predict_single_outcome <- function(outcome, new_x, processed_lavaan) {
   return(results)
 }
 
-get_single_outcome_args <- function(outcome, new_x, processed_lavaan) {
-  beta <- matrix(processed_lavaan$beta[processed_lavaan$beta$lhs == outcome], ncol = 1)
-  sigma_beta <- processed_lavaan$sigma_beta[beta$eqname, beta$eqname]
-  rescale_df <- processed_lavaan$rescale_df[processed_lavaan$rescale_df$outcome == outcome, ]
-  rescale_factor <- rescale_df$scale
-  rescale_mean <- rescale_df$mean
-  sigma_e <- processed_lavaan$sigma_e[outcome, outcome]
-  adj_sigma_e <- as.vector(sigma_e)*rescale_factor
 
-  new_x <- matrix(new_x[beta$rhs], ncol = 1)
-
-  return(list(x = new_x,
-              beta = beta,
-              sigma_beta = sigma_beta,
-              sigma_e = adj_sigma_e,
-              weights = rescale_factor,
-              mean_adjustments = rescale_mean))
-}
 
 prediction_intervals <- function(x, beta, sigma_e, sigma_beta, weights = 1, mean_adjustments = 0 ) {
   weighted_x = weights*x
