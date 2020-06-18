@@ -104,38 +104,3 @@ test_that("predict_weighted_lavaan", {
 })
 
 
-test_that("predict_weighted_lavaan_numerical_results_ordinal", {
-  simple_model <- readRDS("data/simple_model.rds")
-
-  new_x <- c(bestviq2 = 22)
-  weights <- c(y13  = 0.25,
-               y14 = 0.75)
-
-  results_simple <- predict_weighted_lavaan(new_x = new_x,
-                                      weights = weights,
-                                      lavaan_model = simple_model)
-
-  # Manually calculating results for ord_fit1 - the model with one predictor and an ordinal outcome
-
-  coefs <- lavaan::parameterestimates(simple_model)
-  beta <- coefs$est[1]
-  se <- coefs$se[1]
-
-  model_data <- lavaan::lavTech(simple_model, what = "data")
-  preds <- model_data[[1]][,2]*beta
-  mean_preds <- mean(preds)
-  var_preds <- var(preds)
-  raw_pred <- new_x * beta
-  scale <- 1/sqrt(1 + var_preds)
-  adj_pred <- (raw_pred - mean_preds)*scale
-
-
-  expect_equal(results_simple$.fit[1], adj_pred, check.attributes = FALSE)
-  expect_equal(results_simple$.fit[2], adj_pred*0.25, check.attributes = FALSE)
-  expect_equal(results_simple$.se.fit[1], se*scale*new_x, check.attributes = FALSE)
-  expect_equal(results_simple$.se.fit[2], se*scale*new_x*0.25, check.attributes = FALSE)
-
-  expect_equal(results_simple$.se.pred[1], scale*sqrt(new_x^2*se^2 + 1), check.attributes = FALSE)
-
-
-})

@@ -51,7 +51,7 @@ prediction_intervals <- function(x, beta, sigma_e, sigma_beta, weights = 1, mean
   predictions$.conf.high <-  predictions$.fitted + (ci_multiplier*predictions$.se.fit)
   predictions$.pred.low  <-  predictions$.fitted - (ci_multiplier*predictions$.se.pred)
   predictions$.pred.high <-  predictions$.fitted + (ci_multiplier*predictions$.se.pred)
-
+  predictions$rescaled <- !(predicted_mean == t(x)%*% beta)
   return(predictions)
 }
 
