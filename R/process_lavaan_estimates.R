@@ -27,6 +27,14 @@ get_beta <- function(lavaan_fit) {
   return(beta)
 }
 
+#' Title
+#'
+#' @param lavaan_fit a fitted lavaan model
+#'
+#' @return correlation matrix for error from fitted model
+#' @export
+#'
+#' @examples
 get_sigma_e <- function(lavaan_fit) {
   estimates <- get_lavaan_estimates(lavaan_fit, remove.nonfree = FALSE)
   outcomes <- lavaan::lavNames(lavaan_fit, type = "ov.y")

@@ -1,14 +1,28 @@
-predict_weighted_lavaan <- function(new_x, weights, lavaan_model, predict_outcomes = TRUE) {
-  esstimates <- process_lavaan_estimates(lavaan_model)
+#' predict_weighted_lavaan
+#'
+#' @param new_x vector of covariates to predict. names of x must correspond to names of x columns that were used to fit the model
+#' @param weights weights to apply to each outcome. names of w must correspond to names of outcomes in the model
+#' @param lavaan_model fitted lavaan mdoel
+#' @param predict_outcomes TRUE/FALSE: Indicates whether predictions of individual outcomes are included or only weighted prediction
+#'
+#' @return
+#' @export
+#'
+#' @examples
+predict_weighted_lavaan <- function(new_x, weights, lavaan_model, predict_outcomes = TRUE, report_rescale_factors = FALSE) {
+  estimates <- process_lavaan_estimates(lavaan_model)
   prediction_matricies <- get_args_weighted(new_x = new_x,
                                             weights = weights,
-                                            esstimates)
+                                            estimates)
 
   predictions <- do.call(prediction_intervals, prediction_matricies)
   predictions$outcome <- "weighted"
   if(predict_outcomes){
-    outcome_predictions <- predict_outcomes_lavaan(new_x = new_x, processed_lavaan = esstimates)
+    outcome_predictions <- predict_outcomes_lavaan(new_x = new_x, processed_lavaan = estimates)
     predictions <- rbind(outcome_predictions, predictions)
+  }
+  if(report_rescale_factors){
+    predictions <- dplyr::left_join(predictions, estimates$rescale_df, by = "outcome")
   }
   return(predictions)
 }
