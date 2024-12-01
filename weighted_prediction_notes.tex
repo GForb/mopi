@@ -1,0 +1,176 @@
+\title{Prediction of weighted combinations of continuous and ordinal outcomes}
+\author{
+        Gordon Forbes \\
+}
+\date{\today}
+
+\documentclass[12pt]{article}
+\usepackage {amsmath , amssymb , amsthm, mathtools}
+
+%Number this can be used to number equations in equation environments that don't include numbering eg. align*
+\newcommand{\numberthis}{\addtocounter{equation}{1}\tag{\theequation}}
+\newcommand{\E}{\operatorname{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+    This note discusses the challenges in calculating standard errors of prediction and prediction intervals for  weighted combinations of continuous and ordinal outcomes.
+\end{abstract}
+
+\section{Introduction}
+A prediction interval is an interval around a prediction that has the property it will contain the true value with a given probability. Parametric prediction intervals can be calculated using standard errors of prediction. Standard errors of prediction must take into account two sources of errors in predictions: first, the variation of the predicted mean, conditional on predictors, around the true value of the mean. This is captured by the standard error of the estimate and is what we consider with conventional confidence intervals. The second source is the variation of the outcome around the mean described by the residual standard deviation. If a model is correctly specified the first source of error will tend to zero as sample size increases. The second source of error will remain, even for large sample sizes, as is  dependent on the variance of the residual variance. 
+
+Below I describe a parametric approach to estimating prediction intervals. Alternative methods based on bootstrapping or other resampling methods exist which have the advantage of not assuming a normal distribution for prediction errors however I have not been able to think of a way, so far (it may well be possible), to incorporate ordinal outcomes when using bootstrapping: bootstrapping for prediction intervals involves resampling observed residuals and these do not exist for ordinal outcomes modelled using probit regression.
+
+
+\section{Variance of prediction for continuous outcomes}
+Parametric approaches to prediction intervals involve estimating the variance of the predicted value. The  predicted values are assumed to be normally distributed (or have a t-distribution). A prediction interval with the required coverage can be constructed using the standard error of prediction: the square root of the variance of prediction.
+\subsection{Single outcome} % (fold)
+\label{sub:single_outcome}
+
+ For a single outcome \(y\) modelled using linear regression, the variance of prediction at, \((x_1, ..., x_p)\) is:
+\begin{align*}
+     \Var&(\hat{y}^* \mid X=x) = \Var(\sum_p x_p\hat{\beta^p} + e)  \\
+                                  &= \Var(\sum_p x_p\hat{\beta}) + \Var(e) + 2\Cov(e, x\hat{\beta}) \\
+                                  &= \Var(\sum_p x_p\hat{\beta}) + \Var(e) \numberthis \label{eq: var_single} 
+\end{align*} 
+Equation \ref{eq: var_single} follows as we assume errors are independent of estmated betas ie \(2\Cov(e, x\hat{\beta})\)  = 0.
+
+This equation can be found in standard texts on prediction intervals [to do: give ref].
+
+
+% subsection single_outcome (end)
+
+\subsection{Weighted combination of outcomes} % (fold)
+\label{sub:Weighted_combination_of_outcomes}
+
+For a weighted combination of predictions, \(\sum_i w_i \hat{y_i}^*\), each modelled using a linear regression with \(p_i\) predictors, the variance of prediction is:
+\begin{align*}
+    \Var &(\sum_i w_i \hat{y_i}^*\mid X=x) = \Var(\sum_i w_i [\sum_p x_p\hat{\beta_i^p} + e_i]) \\
+        &= \sum_i \sum_j w_i w_j \Cov(\sum_p x_p \hat{\beta_i^p} + e_i, \sum_p x_p \hat{\beta_j^p} + e_j) \\
+        &= \sum_i \sum_j w_i w_j [\Cov(\sum_p x_p \hat{\beta_i^p}, \sum_p x_p \hat{\beta_j^p}) + 2\Cov(\sum_p x_p \hat{\beta_i^p}, e_j) + \Cov(e_i, e_j)] \\
+        &= \sum_i \sum_j w_i w_j [\sum_p \sum_q x_p x_q \Cov(\hat{\beta_i^p},  \hat{\beta_j^q}) + 2 \sum_p x_p \Cov( \hat{\beta_i^p}, e_j) + \Cov(e_i, e_j)] \numberthis \label{eq: var_comb} 
+\end{align*}
+We assume that errors terms are independent of error terms, i.e. \( \Cov( \hat{\beta_i^p}, e_j) = 0\), so \ref{eq: var_comb} becomes:
+\begin{align*}
+    & = \sum_i \sum_j w_i w_j [\sum_p \sum_q x_p x_q \Cov(\hat{\beta_i^p},  \hat{\beta_j^q}) + \Cov(e_i, e_j)] \numberthis \label{eq: var_comb_simp}  \\
+\end{align*}
+
+I have not been able to find discussion of variance for predictions for linear combinations of outcomes in the literature.
+
+
+% subsection wighted_combination_of_outcomes (end)
+
+\subsection{Estimating prediction intervals for combinations of outcomes} % (fold)
+\label{sub:estimating_prediction_intervals_for_combinations_of_outcomes}
+
+To estimate the variance of the prediction error for a weighted combination of outcomes we need estimates for \(\Var(x\hat{\beta_i})\), \(\Var(e_i)\), \(\Cov(x\hat{\beta_i}, x\hat{\beta_j})\), and \(\Cov(e_i, e_j)\). Estimates for \(\Var(x\hat{\beta_i})\) and \(\Var(e_i)\) are easily obtained from linear regression models. 
+
+To obtain estimates of \(\Cov(x\hat{\beta_i}, x\hat{\beta_j})\), and \(\Cov(e_i, e_j)\) structural equation modelling must be used with the errors for each outcome specified to be correlated. For continuous outcomes only this can be done using the sem package in Stata. When combining continuous and ordinal outcomes this can be done using Mplus or R's Lavaan.
+% subsection estimating_prediction_intervals_for_combinations_of_outcomes (end)
+
+\section{Combining ordinal and continuous outcomes} % (fold)
+\label{sec:combining_ordinal_and_continuous_outcomes}
+
+It is possible to combine ordinal and continuous outcomes in a weighted prediction if the ordinal outcomes are modelled using ordered probit regression. The ordered probit model assumes that there is a latent continuous variable, \(z^\star\),  underlying the ordinal outcome.  Predictions of \(z^\star\) may be combined with predictions of continuous outcomes. For combinations of outcomes to make sense they need to be scaled similarly. For continuous outcomes we standardise so they have mean zero and variance one prior to modelling. For ordinal outcomes standardisation of \(z^\star\) must happen based on estimates from the model. 
+
+\subsection{Scaling ordinal outcomes} % (fold)
+\label{sub:scaling_ordinal_outcomes}
+
+\subsubsection{Scaling to give mean zero} % (fold)
+\label{ssub:Scaling to give mean zero}
+To scale \(z^\star\) to have mean zero we must subtract its expected value. We can estimate the expected value by the mean of predicted \(z^\star\).
+
+% subsubsection Scaling to give mean zero (end)
+
+\subsubsection{Variance of predictions for ordinal outcomes} % (fold)
+\label{ssub:variance_of_predictions_for_ordinal_outcomes}
+Under the probit model errors, \(e\), are also assumed to have variance 1. For ordinal outcomes modelled using ordered probit regression, assuming the linear predictor and residuals to be independent, the variance for the underlying latent metric \(z^\star\) is:
+\begin{align*}
+   \Var(z^\star) &= \Var(X\beta + e)  \\
+                 &= \Var(X\beta) + 1 \numberthis \label{eq: var_y_star} 
+\end{align*}
+We can estimate \(\Var(X\beta)\) with estimates of \(\Var(X\hat{\beta})\)  and therefore to scale \(z^\star\) to have variance of one we must divide by a scale factor of \(\sqrt{\Var(X\hat{\beta}) + 1}\).
+
+
+% subsubsection variance_of_predictions_for_ordinal_outcomes (end)
+
+% subsection scaling_ordinal_outcomes (end)
+
+\subsection{Estimating prediction intervals for combinations of ordinal and continuous outcomes} % (fold)
+\label{sub:estimating_prediction_intervals_for_combinations_of_ordinal_and_continuous_outcomes}
+For weighted combinations of predictions, point predictions are scaled by subtracting the mean of predicted \(z^\star\) then dividing by \(\sqrt{\Var(X\hat{\beta_i}) + 1}\) before including in the weighted sum.
+
+\begin{align*}
+   scaled (\hat{z^\star}\mid X=x) &= \frac{x\hat{\beta} - \bar{z^\star}}{\sqrt{\Var(X\hat{\beta}) + 1}}    
+\end{align*}
+
+We can extend the maths in section 2 to include ordinal outcomes by treating the latent ordinal outcome as another continuous outcome. If we treat the mean and variance used to scale the latent ordinal outcome as constants \footnote{
+    By not incorporating the variability in the values used to scale the ordinal outcomes I expect we will underestimate the variance of the forecast error. I do not think this will be an significant source of bias. In the setting we are working in the number of ordinal outcomes in the weighted sum is low. In addition the variance of the estimates of mean and variance of the predictions will tend to zero as sample size increases.},
+ the only change in calculating the variance of the forecast error we need to make is to adjust the weight, \(w_i\) for the ordinal outcome to be \\
+ \(w_i^\star = w_i /\sqrt{\Var(X\hat{\beta_i}) + 1}\). 
+
+
+% subsection estimating_prediction_intervals_for_combinations_of_ordinal_and_continuous_outcomes (end)
+% section combining_ordinal_and_continous_outcomes (end)
+
+
+\section{Matrix notation}
+For implementation in R I will use matrix notation.
+
+\subsubsection{Single outcome}
+Let \(\vec{x} = (x_1, ..., x_p)^T\), \(\vec{\beta} = (\beta ^1, ..., \beta ^p)\), and \(\vec{\Sigma _\beta} \) be the covariance matrix for the beta parameters ie. \(\vec{\Sigma _{\beta ij}} = \Cov(\hat{\beta^i}, \hat{\beta^j})\). Then:
+
+\begin{align}
+    \hat{y} &= \vec{\hat{\beta}} \vec{x} \\
+    \Var(\hat{y}^*) &= \vec{x}^T\vec{\Sigma _\beta}\vec{x} + \Var(e)
+\end{align}
+
+\subsubsection{Weighted combinations of outcomes}
+Suppose we would like to predict a weighted combination of \(k\) outcomes. Let \(\vec{w} = (w_1,...,w_k)^T\) be a column vector of weights, \(\vec{B}\) be the  \(k \times p\) matrix of beta parameters, with \(\vec{B_{ij}} = \beta_i^j\), the parameter for the jth covariate from the ith outcome.
+\begin{equation}
+    \hat{y} = \vec{w^T\hat{B} x}
+\end{equation}
+
+Denote \(\vec{\Sigma_e}\) to be the variance/covariance matrix of the errors, \(e_i\) . Then we have:
+\begin{align}
+    \sum_i \sum_j w_i w_j \Cov(e_i, e_j) = \vec{w}^T \vec{\Sigma_e} \vec{w}
+\end{align}
+For every pair of outcomes, \(y_i, y_j\), set the  matrix \(\vec{\Sigma _ {\hat{\beta}}^{ij}}\) to be the covariance matrix for the estimates of beta coefficients from the respective models.
+\begin{equation}
+     \vec{\Sigma _ {\hat{\beta}}^{ij}} = 
+     \begin{pmatrix}
+         \Cov(\beta_i^1, \beta_j^1) & \cdots & \Cov(\beta_i^1, \beta_j^p) \\
+         \vdots & \ddots & \vdots \\
+        \Cov(\beta_i^p, \beta_j^1) & \cdots & \Cov(\beta_i^p, \beta_j^p)
+     \end{pmatrix} 
+\end{equation}
+Notice that 
+\begin{equation}
+      \sum_p \sum_q x_p x_q \Cov(\hat{\beta_i^p},  \hat{\beta_j^q}) = \vec{x^T \vec{\Sigma _ {\hat{\beta}}^{ij}} x}
+\end{equation}
+Write \(\vec{\Sigma_{\hat{y}}}\) the covariance matrices for a set of predicted outcomes. Then 
+\begin{align*}
+     \begin{pmatrix}
+         \vec{x^T \vec{\Sigma _ {\hat{\beta}}^{11}} x} & \cdots & \vec{x^T \vec{\Sigma _ {\hat{\beta}}^{1k}} x} \\
+         \vdots & \ddots & \vdots \\
+        \vec{x^T \vec{\Sigma _ {\hat{\beta}}^{k1}} x} &\cdots & \vec{x^T \vec{\Sigma _ {\hat{\beta}}^{kk}} x}
+     \end{pmatrix}  
+\end{align*}
+
+ For a vector of outcomes \(\vec{\hat{y}^*} = (\hat{y}^*_1, ..., \hat{y}^*_k)^T\) and weights \(\vec{w} = (w_1,...,w_k)^T\) the variance of the prediction is:
+\begin{align*}
+       \Var(\vec{\hat{y}^{*T}w}) &=  \sum_i \sum_j w_i w_j [\sum_p \sum_q x_p x_q \Cov(\hat{\beta_i^p},  \hat{\beta_j^q})] \\
+                                 &= \vec{w^T \Sigma_{\hat{y}} w}
+\end{align*}
+
+
+
+
+
+\end{document}
