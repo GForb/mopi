@@ -39,7 +39,6 @@ test_that("predict_weighted_lavaan_numerical_ord1", {
 
 
 test_that("predict_weighted_lavaan_numerical_ord2", {
-  library(tidyverse)
   calc_scale <- function(data) {
     var <- var(data)
     scale <- 1/sqrt(1 + var)
@@ -63,24 +62,24 @@ test_that("predict_weighted_lavaan_numerical_ord2", {
 
   model_data <- lavaan::lavTech(model, what = "data")
   bestviq <- model_data[[1]][,3]
-  preds <- bind_rows(tibble(outcome = "y13", pred = bestviq*beta[1]), tibble(outcome = "y14", pred = bestviq*beta[2]))
+  preds <- dplyr::bind_rows(tibble::tibble(outcome = "y13", pred = bestviq*beta[1]), tibble::tibble(outcome = "y14", pred = bestviq*beta[2]))
   adjustments <- preds %>%
-    group_by(outcome) %>%
-    summarise_at(vars(pred), list(mean = mean, var = var, scale = calc_scale))
-  manual_results <- adjustments %>% mutate(raw_pred = new_x * beta,
+    dplyr::group_by(outcome) %>%
+    dplyr::summarise_at(vars(pred), list(mean = mean, var = var, scale = calc_scale))
+  manual_results <- adjustments %>% dplyr::mutate(raw_pred = new_x * beta,
                                            x = 22,
                                            weights = weights,
                                            adj_pred = (raw_pred - mean)*scale)
-  manual_results <- manual_results %>% mutate(wx = x*weights*scale,
+  manual_results <- manual_results %>% dplyr::mutate(wx = x*weights*scale,
                                               wm = mean*scale)
   sigma_beta <- lavaan::vcov(model)[1:2, 1:2]
 
   manual_results <- manual_results %>%
-    mutate(se.fit = sqrt(diag(sigma_beta)*wx))
+    dplyr::mutate(se.fit = sqrt(diag(sigma_beta)*wx))
 
 
   manual_results <- manual_results %>%
-         bind_rows(tibble(outcome = "weighted",
+    dplyr::bind_rows(tibble::tibble(outcome = "weighted",
                           adj_pred = manual_results$adj_pred %*% manual_results$weights,
                           .se.fit = t(manual_results$wx) %*% sigma_beta %*% manual_results$wx))
 

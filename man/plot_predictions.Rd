@@ -9,9 +9,6 @@ plot_predictions(predictions)
 \arguments{
 \item{predictions}{a tibble of predictions created by mopi::predict_weighted_lavaan}
 }
-\value{
-
-}
 \description{
 plot_predictions
 }

@@ -1,14 +1,20 @@
 #' predict_weighted_lavaan
 #'
-#' @param new_x vector of covariates to predict. names of x must correspond to names of x columns that were used to fit the model
-#' @param weights weights to apply to each outcome. names of w must correspond to names of outcomes in the model
-#' @param lavaan_model fitted lavaan mdoel
-#' @param predict_outcomes TRUE/FALSE: Indicates whether predictions of individual outcomes are included or only weighted prediction
-#'
-#' @return
+#' @param new_x vector of covariates to predict. names of x must correspond to names of x columns that were used to fit the model.
+#' @param weights weights to apply to each outcome. names of w must correspond to names of outcomes in the model.
+#' @param lavaan_model fitted lavaan mdoel/
+#' @param predict_outcomes TRUE/FALSE: Indicates whether predictions of individual outcomes are included or only weighted prediction/
+#' @param report_rescale_factors TRUE/FALSE: Indicates whether the scaling multipliers used for each outcome are inlcuded in the output.
+#' @return A data.frame of results
 #' @export
 #'
 #' @examples
+#'
+#'
+#'
+#'
+#'
+#'
 predict_weighted_lavaan <- function(new_x, weights, lavaan_model, predict_outcomes = TRUE, report_rescale_factors = FALSE) {
   estimates <- process_lavaan_estimates(lavaan_model)
   prediction_matricies <- get_args_weighted(new_x = new_x,

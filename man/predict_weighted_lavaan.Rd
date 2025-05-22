@@ -4,19 +4,27 @@
 \alias{predict_weighted_lavaan}
 \title{predict_weighted_lavaan}
 \usage{
-predict_weighted_lavaan(new_x, weights, lavaan_model, predict_outcomes = TRUE)
+predict_weighted_lavaan(
+  new_x,
+  weights,
+  lavaan_model,
+  predict_outcomes = TRUE,
+  report_rescale_factors = FALSE
+)
 }
 \arguments{
-\item{new_x}{vector of covariates to predict}
+\item{new_x}{vector of covariates to predict. names of x must correspond to names of x columns that were used to fit the model.}
 
-\item{weights}{weights to apply to each outcome}
+\item{weights}{weights to apply to each outcome. names of w must correspond to names of outcomes in the model.}
 
-\item{lavaan_model}{fitted lavaan mdoel}
+\item{lavaan_model}{fitted lavaan mdoel/}
 
-\item{predict_outcomes}{TRUE/FALSE: Indicates whether predictions of individual outcomes are included or only weighted prediction}
+\item{predict_outcomes}{TRUE/FALSE: Indicates whether predictions of individual outcomes are included or only weighted prediction/}
+
+\item{report_rescale_factors}{TRUE/FALSE: Indicates whether the scaling multipliers used for each outcome are inlcuded in the output.}
 }
 \value{
-
+A data.frame of results
 }
 \description{
 predict_weighted_lavaan
