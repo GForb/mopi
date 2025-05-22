@@ -1,5 +1,6 @@
 test_that("predict_weighted_lavaan_numerical_ord1", {
   simple_model <- readRDS("data/simple_model.rds")
+  #simple_model <- readRDS("tests/testthat/data/simple_model.rds")
 
   new_x <- c(bestviq2 = 22)
   weights <- c(y13  = 0.25,
@@ -31,7 +32,7 @@ test_that("predict_weighted_lavaan_numerical_ord1", {
 
   expect_equal(results_simple$.se.pred[1], scale*sqrt(new_x^2*se^2 + 1), check.attributes = FALSE)
   expect_equal(results_simple$.se.pred[2], scale*sqrt(new_x^2*se^2 + 1)*0.25, check.attributes = FALSE)
-  expect_equal(results_simple$rescaled, c(TRUE, TRUE), check.attributes = FALSE)
+  expect_equal(results_simple$rescaled |> as.vector(), c(TRUE, TRUE), check.attributes = FALSE)
 
 
 })
@@ -89,7 +90,7 @@ test_that("predict_weighted_lavaan_numerical_ord2", {
 
  # expect_equal(results$.se.pred[1], scale*sqrt(new_x^2*se^2 + 1), check.attributes = FALSE)  this test fails - I don't know why
 #  expect_equal(results$.se.pred[2], scale*sqrt(new_x^2*se^2 + 1)*0.25, check.attributes = FALSE) this test fails - I don't know why
-  expect_equal(results$rescaled, c(TRUE, TRUE, TRUE), check.attributes = FALSE)
+  expect_equal(results$rescaled |> as.vector(), c(TRUE, TRUE, TRUE), check.attributes = FALSE)
 
 
 })
